@@ -1,0 +1,178 @@
+{
+  "app_name": "StudioTally Pro",
+  "personality": "7 Dark-First Utility DARK",
+  "personality_one_liner": "A high-contrast, tactical command center designed for instant glanceability and zero-friction broadcast control.",
+  "color": {
+    "surface": "#0a0a0a",
+    "onSurface": "#ffffff",
+    "surfaceSecondary": "#161618",
+    "onSurfaceSecondary": "#e0e0e0",
+    "surfaceTertiary": "#222225",
+    "onSurfaceTertiary": "#c0c0c0",
+    "surfaceInverse": "#ffffff",
+    "onSurfaceInverse": "#000000",
+    "brand": "#FFB300",
+    "brandPrimary": "#FFB300",
+    "onBrandPrimary": "#000000",
+    "brandSecondary": "#333333",
+    "onBrandSecondary": "#ffffff",
+    "brandTertiary": "#4D3600",
+    "onBrandTertiary": "#FFB300",
+    "success": "#00E676",
+    "onSuccess": "#000000",
+    "warning": "#FFB300",
+    "onWarning": "#000000",
+    "error": "#FF3333",
+    "onError": "#ffffff",
+    "info": "#444444",
+    "onInfo": "#ffffff",
+    "border": "#2a2a2a",
+    "borderStrong": "#444444",
+    "divider": "#1f1f1f",
+    "muted": "#888888"
+  },
+  "typography": {
+    "displayFontFamily": "Barlow Condensed",
+    "textFontFamily": "IBM Plex Sans",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Dense, tactical spacing for operational surfaces. Whitespace is used only to separate logical component groups. Margins and paddings are tight (sm/md) to maximize glanceability and screen real estate.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 4,
+    "md": 8,
+    "lg": 12,
+    "pill": 999
+  },
+  "shadow_tier": "0",
+  "navigation": "bottom_tabs",
+  "icon_set": "Phosphor",
+  "glassmorphism": {
+    "enabled": false,
+    "do's": [
+      "Use solid surfaceSecondary and dividers for elevation."
+    ],
+    "dont's": [
+      "No blur or glassmorphism. This is a high-performance utility app where clarity beats aesthetics."
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-blur",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Home / Mode Selector",
+      "purpose": "Launchpad to select the operational mode (OBS Tally, Autonomous Studio, or Alarm System).",
+      "states": {
+        "loading": "Centered brand-colored activity indicator.",
+        "empty": "N/A",
+        "error": "Standard alert prompt."
+      },
+      "layout": "Grid of massive tactile blocks (width: 100% of row, or 2-col flex wrap). Each block has an icon and heavy Barlow Condensed typography. A subtle background image with vertical gradient scrim sits behind the cards to provide a studio feel."
+    },
+    {
+      "name": "OBS Connection Screen",
+      "purpose": "Configure WebSocket connection to OBS and assign the device to a scene/source.",
+      "states": {
+        "loading": "Skeleton rows for scenes list.",
+        "empty": "No scenes found. Check OBS connection.",
+        "error": "Connection failed banner (red surface, white text) with a 'Retry' button."
+      },
+      "layout": "Top section: IP/Port/Password form with solid inputs (surfaceTertiary) and labels above. Middle: Sticky connection status indicator. Bottom: Scrollable list of available OBS sources/scenes. Use single-column layout."
+    },
+    {
+      "name": "Tally Light (Fullscreen)",
+      "purpose": "A massive, room-scale visual indicator for the camera operator.",
+      "states": {
+        "loading": "Black screen with 'WAITING FOR SIGNAL' text.",
+        "empty": "N/A",
+        "error": "Red border with 'CONNECTION LOST'."
+      },
+      "layout": "Completely immersive. Hide navigation if possible, or use a floating dismiss button. Idle = Pure black surface (surface) with dimmed grey text. PREVIEW = Fullscreen 'success' (#00E676) background with massive black typography. LIVE = Fullscreen 'error' (#FF3333) background with massive white typography. Source name is vertically and horizontally centered."
+    },
+    {
+      "name": "Director Control Panel",
+      "purpose": "Autonomous mode central dashboard to see and control all connected phones/cameras.",
+      "states": {
+        "loading": "Spinner in the center.",
+        "empty": "Dotted border container: 'No cameras joined session.' + Share Code CTA.",
+        "error": "Session sync error banner."
+      },
+      "layout": "Multi-column grid of camera tiles. Each tile shows camera name, current state (border color: green/red/grey). Tapping a tile toggles its state (Preview -> Live). Bottom fixed area: 'Kill All' or 'Blackout' master CTA."
+    },
+    {
+      "name": "Alarm Sender / Dashboard",
+      "purpose": "A tactile panic-button interface to alert the autonomous tally screens.",
+      "states": {
+        "loading": "N/A",
+        "empty": "N/A",
+        "error": "Failed to send alert."
+      },
+      "layout": "Massive central 'CALL' or 'ALERT' circular button (using brandPrimary or error color), surrounded by 3-4 preset message chips ('Need coffee', 'Quiet please')."
+    },
+    {
+      "name": "Incoming Alert (Receiver)",
+      "purpose": "Fullscreen interruptive visual/audio alarm triggered by the sender.",
+      "states": {
+        "loading": "N/A",
+        "empty": "N/A",
+        "error": "N/A"
+      },
+      "layout": "Flashing fullscreen state. Oversized message text. Huge 'DISMISS' swipe-to-acknowledge or hold-to-acknowledge button at the bottom."
+    }
+  ],
+  "images": {
+    "hero_studio": {
+      "url": "https://images.unsplash.com/photo-1783980643230-69c54b9996a2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODh8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBicm9hZGNhc3QlMjBzdHVkaW8lMjBkYXJrfGVufDB8fHx8MTc4OTA3MTgxOHww&ixlib=rb-4.1.0&q=85",
+      "dark": "https://images.unsplash.com/photo-1783980643230-69c54b9996a2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODh8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBicm9hZGNhc3QlMjBzdHVkaW8lMjBkYXJrfGVufDB8fHx8MTc4OTA3MTgxOHww&ixlib=rb-4.1.0&q=85",
+      "alt": "Audio mixing console with illuminated buttons"
+    },
+    "hero_lens": {
+      "url": "https://images.unsplash.com/photo-1533746228171-962520811097?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODF8MHwxfHNlYXJjaHwyfHxjYW1lcmElMjBsZW5zJTIwZGFyayUyMG1hY3JvfGVufDB8fHx8MTc4OTA3MTgxOHww&ixlib=rb-4.1.0&q=85",
+      "dark": "https://images.unsplash.com/photo-1533746228171-962520811097?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODF8MHwxfHNlYXJjaHwyfHxjYW1lcmElMjBsZW5zJTIwZGFyayUyMG1hY3JvfGVufDB8fHx8MTc4OTA3MTgxOHww&ixlib=rb-4.1.0&q=85",
+      "alt": "Close up of a camera lens"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the Dark-First Utility DARK guidelines. The app must feel like professional hardware, not a consumer social app.",
+    "Borders and backgrounds dictate hierarchy. Use solid surface colors and dividers. DO NOT use glassmorphism, blur, or heavy drop shadows.",
+    "Typography is critical: Use Barlow Condensed for all metrics, state indicators, and large text. Use IBM Plex Sans for forms, settings, and smaller metadata. Ensure maximum WCAG AA contrast.",
+    "Tally Logic: Map semantic colors strictly -> `error` (#FF3333) is always used for LIVE / ON-AIR states. `success` (#00E676) is always used for PREVIEW / STANDBY states. Idle states use `surface` pure black.",
+    "The Fullscreen Tally and Alert Receiver screens MUST force the screen to stay awake (`expo-keep-awake`).",
+    "On the Director Control Panel, cameras are represented by tiles. The tile's border color should reflect the camera's current state (Red for live, Green for preview).",
+    "Use tactile feedback (haptics) on every interaction, especially for mode selection and tally state toggling. Wire it on the press events.",
+    "Never use indigo, blue, purple, or generic app colors. Stick strictly to the defined obsidian/slate base, amber brand, and broadcast red/green."
+  ],
+  "haptics": {
+    "events": {
+      "mode_select": "impactMedium",
+      "tally_toggle_preview": "impactLight",
+      "tally_toggle_live": "impactHeavy",
+      "alarm_trigger": "notificationWarning",
+      "alarm_dismiss": "impactMedium"
+    }
+  }
+}
