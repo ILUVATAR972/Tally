@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Depends, Header
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -8,11 +8,12 @@ import random
 import string
 import logging
 import asyncio
+import httpx
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 
 ROOT_DIR = Path(__file__).parent
@@ -245,6 +246,101 @@ async def send_alarm(code: str, input: AlarmInput):
         await manager.broadcast(code, payload)
     else:
         await manager.send_to(code, input.target_id, payload)
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
+# Auth (Emergent-managed Google sign-in) — optional
+# ---------------------------------------------------------------------------
+EMERGENT_SESSION_URL = "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data"
+
+
+class SessionExchange(BaseModel):
+    session_id: str
+
+
+class LastSessionInput(BaseModel):
+    code: str
+
+
+async def get_current_user(authorization: Optional[str] = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Non authentifié")
+    token = authorization.split(" ", 1)[1]
+    sess = await db.user_sessions.find_one({"session_token": token})
+    if not sess:
+        raise HTTPException(status_code=401, detail="Session invalide")
+    expires = sess.get("expires_at")
+    if isinstance(expires, str):
+        expires = datetime.fromisoformat(expires)
+    if expires and expires.tzinfo is None:
+        expires = expires.replace(tzinfo=timezone.utc)
+    if expires and expires < datetime.now(timezone.utc):
+        raise HTTPException(status_code=401, detail="Session expirée")
+    user = await db.users.find_one({"user_id": sess["user_id"]}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=401, detail="Utilisateur introuvable")
+    return user
+
+
+@api_router.post("/auth/session")
+async def auth_session(body: SessionExchange):
+    async with httpx.AsyncClient(timeout=15) as clientx:
+        r = await clientx.get(EMERGENT_SESSION_URL, headers={"X-Session-ID": body.session_id})
+    if r.status_code != 200:
+        raise HTTPException(status_code=401, detail="Session invalide ou expirée")
+    data = r.json()
+    email = data["email"]
+    name = data.get("name", "")
+    picture = data.get("picture", "")
+    session_token = data["session_token"]
+
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        user_id = existing["user_id"]
+        await db.users.update_one(
+            {"user_id": user_id}, {"$set": {"name": name, "picture": picture}}
+        )
+    else:
+        user_id = "user_" + uuid.uuid4().hex[:12]
+        await db.users.insert_one({
+            "user_id": user_id,
+            "email": email,
+            "name": name,
+            "picture": picture,
+            "last_session_code": None,
+            "created_at": now_iso(),
+        })
+
+    await db.user_sessions.insert_one({
+        "session_token": session_token,
+        "user_id": user_id,
+        "created_at": datetime.now(timezone.utc),
+        "expires_at": datetime.now(timezone.utc) + timedelta(days=7),
+    })
+    user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    return {"session_token": session_token, "user": user}
+
+
+@api_router.get("/auth/me")
+async def auth_me(user=Depends(get_current_user)):
+    return user
+
+
+@api_router.post("/auth/logout")
+async def auth_logout(authorization: Optional[str] = Header(None)):
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.split(" ", 1)[1]
+        await db.user_sessions.delete_one({"session_token": token})
+    return {"ok": True}
+
+
+@api_router.post("/auth/last-session")
+async def save_last_session(body: LastSessionInput, user=Depends(get_current_user)):
+    await db.users.update_one(
+        {"user_id": user["user_id"]},
+        {"$set": {"last_session_code": body.code.upper()}},
+    )
     return {"ok": True}
 
 
